@@ -1,7 +1,6 @@
 import { supabase, createBooking, Booking, LuggageItem } from '@/lib/supabase';
 
 export interface BookingDetails {
-  serviceType: 'self-service' | 'pickup';
   pickupLocation: string;
   deliveryLocation: string;
   storageHours: number;
@@ -21,6 +20,41 @@ export interface BookingDetails {
   };
 }
 
+export interface Porter {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  licenseNumber: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  rating: number;
+  totalDeliveries: number;
+  joinDate: string;
+  verificationStatus: string;
+  location?: { latitude: number; longitude: number };
+}
+
+const MOCK_PORTERS: Porter[] = [
+  {
+    id: 'porter1',
+    name: 'Rajesh Kumar',
+    email: 'rajesh.kumar@example.com',
+    phone: '+91 98765 43210',
+    address: '123 Main Street, Andheri West, Mumbai',
+    licenseNumber: 'MH1420210045678',
+    vehicleNumber: 'MH12AB1234',
+    vehicleType: 'Motorcycle',
+    rating: 4.8,
+    totalDeliveries: 156,
+    joinDate: 'December 2024',
+    verificationStatus: 'verified',
+    location: { latitude: 19.1196, longitude: 72.8469 },
+  },
+  // Add more mock porters here if needed
+];
+
 export const generateBookingNumber = (): string => {
   const prefix = 'DN';
   const timestamp = Date.now().toString().slice(-6);
@@ -34,25 +68,30 @@ export const generateOTP = (): string => {
 
 export const calculateDeliveryTime = (pickupTime: Date, storageHours: number): Date => {
   const deliveryTime = new Date(pickupTime);
-  deliveryTime.setHours(deliveryTime.getHours() + storageHours + 1); // +1 hour for processing
+  deliveryTime.setHours(deliveryTime.getHours() + storageHours + 1); // +1 hour processing
   return deliveryTime;
+};
+
+export const assignRandomPorter = (): Porter => {
+  const randomIndex = Math.floor(Math.random() * MOCK_PORTERS.length);
+  return MOCK_PORTERS[randomIndex];
 };
 
 export const processBooking = async (
   userId: string,
   bookingDetails: BookingDetails
-): Promise<Booking> => {
+): Promise<{ booking: Booking; porter: Porter }> => {
   try {
     const bookingNumber = generateBookingNumber();
     const otp = generateOTP();
     const pickupTime = new Date();
     const deliveryTime = calculateDeliveryTime(pickupTime, bookingDetails.storageHours);
 
-    // Create booking data
+    // Single pricing maintained here
     const bookingData: Partial<Booking> = {
       booking_number: bookingNumber,
       user_id: userId,
-      service_type: bookingDetails.serviceType,
+      service_type: 'pickup', // fixed service type since self-service removed
       pickup_location: bookingDetails.pickupLocation,
       delivery_location: bookingDetails.deliveryLocation,
       storage_hours: bookingDetails.storageHours,
@@ -65,7 +104,6 @@ export const processBooking = async (
       otp: otp,
     };
 
-    // Create luggage items data
     const luggageItemsData: Partial<LuggageItem>[] = bookingDetails.luggageItems.map(item => ({
       luggage_size: item.id as 'small' | 'medium' | 'large' | 'extra-large',
       quantity: item.quantity,
@@ -74,18 +112,29 @@ export const processBooking = async (
     }));
 
     // Create booking with items and photos
-    const booking = await createBooking(
-      bookingData,
-      luggageItemsData,
-      bookingDetails.luggagePhotos
-    );
+    const booking = await createBooking(bookingData, luggageItemsData, bookingDetails.luggagePhotos);
 
-    return booking;
+    // Assign random porter
+    const porter = assignRandomPorter();
+
+    // Update booking with porter details & confirm
+    await supabase
+      .from('bookings')
+      .update({
+        porter_id: porter.id,
+        status: 'confirmed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', booking.id);
+
+    return { booking, porter };
   } catch (error) {
     console.error('Error processing booking:', error);
     throw error;
   }
 };
+
+// Other functions unchanged or remove self-service/pickup references if any
 
 export const getBookingsByUser = async (userId: string): Promise<Booking[]> => {
   try {
@@ -103,27 +152,6 @@ export const getBookingsByUser = async (userId: string): Promise<Booking[]> => {
     return data || [];
   } catch (error) {
     console.error('Error fetching user bookings:', error);
-    throw error;
-  }
-};
-
-export const getBookingsByPorter = async (porterId: string): Promise<Booking[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        luggage_items(*),
-        luggage_photos(*),
-        users!bookings_user_id_fkey(name, phone)
-      `)
-      .eq('porter_id', porterId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching porter bookings:', error);
     throw error;
   }
 };
@@ -148,27 +176,6 @@ export const updateBookingStatus = async (
     if (error) throw error;
   } catch (error) {
     console.error('Error updating booking status:', error);
-    throw error;
-  }
-};
-
-export const assignPorterToBooking = async (
-  bookingId: string,
-  porterId: string
-): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from('bookings')
-      .update({
-        porter_id: porterId,
-        status: 'confirmed',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', bookingId);
-
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error assigning porter to booking:', error);
     throw error;
   }
 };

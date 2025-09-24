@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,14 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Image,
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { 
-  MapPin, 
-  Clock, 
-  Shield, 
+import {
+  MapPin,
+  Clock,
+  Shield,
   Star,
   ArrowRight,
   Camera,
@@ -29,48 +28,6 @@ import PriceCalculator from '@/components/PriceCalculator';
 export default function UserHomeScreen() {
   const [calculatorVisible, setCalculatorVisible] = useState(false);
   const [userLocation, setUserLocation] = useState('Varanasi Railway Station');
-
-  const nearbyCloakrooms = [
-    {
-      id: 'CR001',
-      name: 'Varanasi Junction Cloak room',
-      distance: '0.2 km',
-      rating: 4.8,
-      reviews: 156,
-      price: 'From ₹35/hour',
-      image: 'https://images.pexels.com/photos/1058277/pexels-photo-1058277.jpeg',
-      features: ['CCTV Monitored', '24/7 Security', 'Smart Lockers', 'Insurance'],
-      availableLockers: 23,
-      totalLockers: 50,
-      location: 'Platform 1 Exit, Varanasi Junction',
-    },
-    {
-      id: 'CR002', 
-      name: 'Dashashwamedh Ghat Storage',
-      distance: '1.5 km',
-      rating: 4.6,
-      reviews: 89,
-      price: 'From ₹35/hour',
-      image: 'https://images.pexels.com/photos/2034851/pexels-photo-2034851.jpeg',
-      features: ['CCTV Monitored', 'Climate Control', 'Smart Lockers', 'WiFi'],
-      availableLockers: 15,
-      totalLockers: 30,
-      location: 'Near Dashashwamedh Ghat, Varanasi',
-    },
-    {
-      id: 'CR003',
-      name: 'Kashi Vishwanath Storage Hub',
-      distance: '2.1 km', 
-      rating: 4.9,
-      reviews: 234,
-      price: 'From ₹35/hour',
-      image: 'https://images.pexels.com/photos/1058277/pexels-photo-1058277.jpeg',
-      features: ['CCTV Monitored', '24/7 Security', 'Smart Lockers', 'Insurance', 'Climate Control'],
-      availableLockers: 8,
-      totalLockers: 40,
-      location: 'Temple Complex Area, Varanasi',
-    },
-  ];
 
   const recentBookings = [
     {
@@ -101,17 +58,6 @@ export default function UserHomeScreen() {
     );
   };
 
-  const handleCloakroomSelect = (cloakroom: any) => {
-    Alert.alert(
-      'Select Cloakroom',
-      `${cloakroom.name}\n${cloakroom.location}\n\nAvailable Lockers: ${cloakroom.availableLockers}/${cloakroom.totalLockers}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Book Now', onPress: () => setCalculatorVisible(true) }
-      ]
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -122,7 +68,7 @@ export default function UserHomeScreen() {
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>Welcome to DropNGo!</Text>
             <Text style={styles.location}>📍 {userLocation}</Text>
-            
+
             <View style={styles.statsContainer}>
               <View style={styles.statCard}>
                 <Package size={24} color="#FFFFFF" />
@@ -144,59 +90,6 @@ export default function UserHomeScreen() {
         </LinearGradient>
 
         <View style={styles.content}>
-          <View style={styles.cloakroomsSection}>
-            <Text style={styles.sectionTitle}>Nearby Cloakrooms</Text>
-            {nearbyCloakrooms.map((cloakroom) => (
-              <TouchableOpacity 
-                key={cloakroom.id} 
-                style={styles.cloakroomCard}
-                onPress={() => handleCloakroomSelect(cloakroom)}
-              >
-                <Image source={{ uri: cloakroom.image }} style={styles.cloakroomImage} />
-                <View style={styles.cloakroomInfo}>
-                  <View style={styles.cloakroomHeader}>
-                    <Text style={styles.cloakroomName}>{cloakroom.name}</Text>
-                    <View style={styles.distanceContainer}>
-                      <Navigation size={12} color="#3B82F6" />
-                      <Text style={styles.distance}>{cloakroom.distance}</Text>
-                    </View>
-                  </View>
-                  
-                  <Text style={styles.cloakroomLocation}>{cloakroom.location}</Text>
-                  
-                  <View style={styles.cloakroomMeta}>
-                    <View style={styles.ratingContainer}>
-                      <Star size={12} color="#F59E0B" />
-                      <Text style={styles.rating}>{cloakroom.rating}</Text>
-                      <Text style={styles.reviews}>({cloakroom.reviews})</Text>
-                    </View>
-                    <Text style={styles.price}>{cloakroom.price}</Text>
-                  </View>
-
-                  <View style={styles.availabilityContainer}>
-                    <View style={styles.lockersInfo}>
-                      <Lock size={12} color="#059669" />
-                      <Text style={styles.lockersText}>
-                        {cloakroom.availableLockers} of {cloakroom.totalLockers} lockers available
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.featuresContainer}>
-                    {cloakroom.features.slice(0, 3).map((feature, index) => (
-                      <View key={index} style={styles.featureTag}>
-                        <Text style={styles.featureText}>{feature}</Text>
-                      </View>
-                    ))}
-                    {cloakroom.features.length > 3 && (
-                      <Text style={styles.moreFeatures}>+{cloakroom.features.length - 3} more</Text>
-                    )}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
           <TouchableOpacity
             style={styles.calculatorButton}
             onPress={() => setCalculatorVisible(true)}
@@ -331,120 +224,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
   },
-  cloakroomsSection: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  cloakroomCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    overflow: 'hidden',
-  },
-  cloakroomImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#F3F4F6',
-  },
-  cloakroomInfo: {
-    padding: 16,
-  },
-  cloakroomHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  cloakroomName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    flex: 1,
-  },
-  distanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  distance: {
-    fontSize: 12,
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  cloakroomLocation: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 12,
-  },
-  cloakroomMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  rating: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  reviews: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  price: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#059669',
-  },
-  availabilityContainer: {
-    marginBottom: 12,
-  },
-  lockersInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  lockersText: {
-    fontSize: 12,
-    color: '#059669',
-    fontWeight: '600',
-  },
-  featuresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  featureTag: {
-    backgroundColor: '#F0F8FF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  featureText: {
-    fontSize: 10,
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  moreFeatures: {
-    fontSize: 10,
-    color: '#6B7280',
-    fontStyle: 'italic',
-  },
   calculatorButton: {
     marginBottom: 32,
   },
@@ -464,6 +243,12 @@ const styles = StyleSheet.create({
   featuresSection: {
     marginBottom: 32,
   },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 16,
+  },
   featuresList: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -482,6 +267,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '48%',
     gap: 8,
+  },
+  featureText: {
+    fontSize: 14,
+    color: '#111827',
   },
   recentSection: {
     marginBottom: 32,

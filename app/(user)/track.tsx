@@ -190,11 +190,13 @@ export default function TrackingScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.liveTrackButton}>
+        <TouchableOpacity 
+          style={styles.liveTrackButton}
+          onPress={() => setMapVisible(true)}
+        >
           <LinearGradient
             colors={['#3B82F6', '#1E40AF']}
             style={styles.liveTrackGradient}
-            onPress={() => setMapVisible(true)}
           >
             <Navigation size={20} color="#FFFFFF" />
             <Text style={styles.liveTrackText}>Live GPS Tracking</Text>
@@ -233,11 +235,13 @@ export default function TrackingScreen() {
         qrData={currentBooking.qrCode}
       />
 
-      <LiveTrackingMap
-        visible={mapVisible}
-        onClose={() => setMapVisible(false)}
-        booking={currentBooking}
-      />
+      {mapVisible && (
+        <LiveTrackingMap
+          visible={mapVisible}
+          onClose={() => setMapVisible(false)}
+          booking={currentBooking}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -543,3 +547,4 @@ const styles = StyleSheet.create({
     color: '#059669',
   },
 });
+
