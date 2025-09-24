@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { X, Navigation, Phone, MessageCircle, MapPin, Truck } from 'lucide-react-native';
+import { X, Phone, MessageCircle, MapPin, Truck } from 'lucide-react-native';
 
 interface LiveTrackingMapProps {
   visible: boolean;
@@ -53,8 +53,7 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
 
   useEffect(() => {
     getCurrentLocation();
-    const locationInterval = setInterval(updatePorterLocation, 10000); // Update every 10 seconds
-
+    const locationInterval = setInterval(updatePorterLocation, 10000); // Update every 10 sec
     return () => clearInterval(locationInterval);
   }, []);
 
@@ -65,7 +64,6 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
         Alert.alert('Permission denied', 'Location permission is required for tracking');
         return;
       }
-
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         latitude: location.coords.latitude,
@@ -77,14 +75,9 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
   };
 
   const updatePorterLocation = () => {
-    // Simulate porter movement (in real app, this would come from backend)
     const newLat = porterLocation.latitude + (Math.random() - 0.5) * 0.001;
     const newLng = porterLocation.longitude + (Math.random() - 0.5) * 0.001;
-    
-    setPorterLocation({
-      latitude: newLat,
-      longitude: newLng,
-    });
+    setPorterLocation({ latitude: newLat, longitude: newLng });
   };
 
   const getStatusColor = (status: string) => {
@@ -106,32 +99,24 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
   };
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Radius of the Earth in kilometers
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = R * c; // Distance in kilometers
-    return d.toFixed(1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Number((R * c).toFixed(1));
   };
 
   const getRouteCoordinates = () => {
-    if (booking.status === 'pickup-pending') {
-      return [porterLocation, booking.pickupLocation];
-    } else {
-      return [porterLocation, booking.deliveryLocation];
-    }
+    if (booking.status === 'pickup-pending') return [porterLocation, booking.pickupLocation];
+    else return [porterLocation, booking.deliveryLocation];
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      visible={visible}
-      onRequestClose={onClose}
-    >
+    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerInfo}>
@@ -196,12 +181,13 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
           />
         </MapView>
 
+        {/* Status & Info */}
         <View style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <View style={[styles.statusIndicator, { backgroundColor: getStatusColor(booking.status) }]} />
             <Text style={styles.statusText}>{getStatusText(booking.status)}</Text>
           </View>
-          
+
           <View style={styles.porterInfo}>
             <View style={styles.porterDetails}>
               <Text style={styles.porterName}>{booking.porter.name}</Text>
@@ -217,7 +203,7 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
                 </Text>
               )}
             </View>
-            
+
             <View style={styles.porterActions}>
               <TouchableOpacity style={styles.actionButton}>
                 <Phone size={20} color="#3B82F6" />
@@ -237,7 +223,7 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
               <Text style={styles.locationAddress}>{booking.pickupLocation.address}</Text>
             </View>
           </View>
-          
+
           <View style={styles.locationItem}>
             <View style={[styles.locationDot, { backgroundColor: '#059669' }]} />
             <View style={styles.locationDetails}>
@@ -252,153 +238,30 @@ export default function LiveTrackingMap({ visible, onClose, booking }: LiveTrack
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#3B82F6',
-    paddingTop: 50,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  bookingId: {
-    fontSize: 14,
-    color: '#E5E7EB',
-    marginTop: 2,
-  },
-  closeButton: {
-    padding: 8,
-  },
-  map: {
-    flex: 1,
-  },
-  porterMarker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-  },
-  locationMarker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  statusCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  statusText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  porterInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  porterDetails: {
-    flex: 1,
-  },
-  porterName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  porterPhone: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  distance: {
-    fontSize: 12,
-    color: '#059669',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  porterActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F0F8FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locationInfo: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  locationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  locationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  locationDetails: {
-    flex: 1,
-  },
-  locationLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 2,
-  },
-  locationAddress: {
-    fontSize: 14,
-    color: '#111827',
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#3B82F6', paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20 },
+  headerInfo: { flex: 1 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' },
+  bookingId: { fontSize: 14, color: '#E5E7EB', marginTop: 2 },
+  closeButton: { padding: 8 },
+  map: { flex: 1 },
+  porterMarker: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFFFFF' },
+  locationMarker: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
+  statusCard: { backgroundColor: '#FFFFFF', margin: 16, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 },
+  statusHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  statusIndicator: { width: 12, height: 12, borderRadius: 6, marginRight: 8 },
+  statusText: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  porterInfo: { flexDirection: 'row', alignItems: 'center' },
+  porterDetails: { flex: 1 },
+  porterName: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  porterPhone: { fontSize: 14, color: '#6B7280', marginTop: 2 },
+  distance: { fontSize: 12, color: '#059669', fontWeight: '600', marginTop: 4 },
+  porterActions: { flexDirection: 'row', gap: 8 },
+  actionButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0F8FF', alignItems: 'center', justifyContent: 'center' },
+  locationInfo: { backgroundColor: '#FFFFFF', marginHorizontal: 16, marginBottom: 16, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 },
+  locationItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  locationDot: { width: 12, height: 12, borderRadius: 6, marginRight: 12 },
+  locationDetails: { flex: 1 },
+  locationLabel: { fontSize: 12, fontWeight: '600', color: '#6B7280', marginBottom: 2 },
+  locationAddress: { fontSize: 14, color: '#111827' },
 });
-
